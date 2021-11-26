@@ -1,6 +1,8 @@
 package main
 
-import "std/github.com/cloneCoin/blockchain"
+import (
+	"github.com/cloneCoin/blockchain"
+)
 
 // B1
 // 	b1Hash=(data+"")
@@ -20,9 +22,13 @@ func main() {
 	// fmt.Println(genesisBlock)
 	chain := blockchain.GetBlockChain()
 	// chain.AddBlock("Genesis Block")
-	// chain.AddBlock("Second Block")
-	// chain.AddBlock("Third Block")
+	chain.AddBlock("Second Block")
+	chain.AddBlock("Third Block")
 	// chain.ListBlocks()
+	// for _, block := range presentation {
+	// 	fmt.Println(block.data) //block내  멤버를 export해야함.  불합리하다고 생각함 ㅎㅎ
+	// }
+	//http expolorer, json api, cli (command line interface) 추가 구현 예정
 }
 
 // func getBytea(word string) []byte{

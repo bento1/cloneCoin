@@ -35,7 +35,7 @@ func GetBlockChain() *blockchain { //singleton pattern 인스턴스를 외부 �
 		// b = &blockchain{}// 시작할떄 한번만 실행 시키고 싶다 Sync 패키지를 사용한다. 어떤 스레드가 있어도 누구든 한번만 수행 sync.Once
 		once.Do(func() {
 			b = &blockchain{}
-			b.blocks = append(b.blocks, createBlock("Genesis Block"))
+			b.AddBlock("Genesis Block")
 		})
 	}
 	return b
@@ -48,20 +48,16 @@ func getLastHash() string {
 	}
 	return ""
 }
+
 func (b *blockchain) AddBlock(data string) {
 	//hash 가져와야함
-	newBlock := block{data, "", b.getLastHash()}
+	// newBlock := block{data, "", getLastHash()}
 	//hash 생성해야함
-	hash := sha256.Sum256([]byte(newBlock.data + newBlock.hash))
-	newBlock.hash = fmt.Sprintf("%x", hash)
+	// hash := sha256.Sum256([]byte(newBlock.data + newBlock.hash))
+	// newBlock.hash = fmt.Sprintf("%x", hash)
 	//Block에 추가해야함
-	b.blocks = append(b.blocks, newBlock)
+	b.blocks = append(b.blocks, createBlock("Genesis Block"))
 }
-func (b *blockchain) ListBlocks() {
-	for _, block := range b.blocks {
-		fmt.Printf("Data:%s ", block.data)
-		fmt.Printf("Hash:%s ", block.hash)
-		fmt.Printf("Previous Hash:%s \n", block.previousHash)
-
-	}
+func (b *blockchain) ListBlocks() []*block {
+	return GetBlockChain().blocks
 }
