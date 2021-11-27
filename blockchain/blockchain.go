@@ -8,27 +8,27 @@ import (
 
 //ver1 21-11-25 only blockchain develop
 //여러 기능을 추가하면서 refactoring을 계속 할 것임 ... transaction, database..
-type block struct {
-	data         string //transaction 등이 바뀔수 있다.
-	hash         string
-	previousHash string
+type Block struct {
+	Data         string //transaction 등이 바뀔수 있다.
+	Hash         string
+	PreviousHash string
 }
 type blockchain struct {
 	// blocks []block
-	blocks []*block // 복사하고싶지 않음
+	blocks []*Block // 복사하고싶지 않음
 }
 
 var b *blockchain //singleton pattern 이녀석을  외부에서 읽게함-> 1개의 인스턴스만 존재하게됨
 var once sync.Once
 
-func createBlock(data string) *block {
-	newBlock := block{data, "", getLastHash()}
+func createBlock(data string) *Block {
+	newBlock := Block{data, "", getLastHash()}
 	newBlock.calculateHash()
 	return &newBlock
 }
-func (b *block) calculateHash() {
-	hash := sha256.Sum256([]byte(b.data + b.previousHash))
-	b.hash = fmt.Sprintf("%x", hash)
+func (b *Block) calculateHash() {
+	hash := sha256.Sum256([]byte(b.Data + b.PreviousHash))
+	b.Hash = fmt.Sprintf("%x", hash)
 }
 func GetBlockChain() *blockchain { //singleton pattern 인스턴스를 외부 읽는 메소드-> 1개의 인스턴스만 존재하게됨
 	if b == nil {
@@ -44,7 +44,7 @@ func GetBlockChain() *blockchain { //singleton pattern 인스턴스를 외부 �
 func getLastHash() string {
 	// if len(b.blocks) > 0 {// singleton에서 instance는 getblockchain으로만 가져오다
 	if len(GetBlockChain().blocks) != 0 {
-		return GetBlockChain().blocks[len(GetBlockChain().blocks)-1].hash
+		return GetBlockChain().blocks[len(GetBlockChain().blocks)-1].Hash
 	}
 	return ""
 }
@@ -56,8 +56,8 @@ func (b *blockchain) AddBlock(data string) {
 	// hash := sha256.Sum256([]byte(newBlock.data + newBlock.hash))
 	// newBlock.hash = fmt.Sprintf("%x", hash)
 	//Block에 추가해야함
-	b.blocks = append(b.blocks, createBlock("Genesis Block"))
+	b.blocks = append(b.blocks, createBlock(data))
 }
-func (b *blockchain) ListBlocks() []*block {
+func (b *blockchain) ListBlocks() []*Block {
 	return GetBlockChain().blocks
 }

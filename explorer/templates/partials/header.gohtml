@@ -1,0 +1,21 @@
+{{define "header"}}
+<header>
+    
+    <nav>
+        <a href="/"><h1>Dong coin</h1></a>
+        <ul>
+            <li>
+                <a href="/">Home</a>
+            </li>
+            <li>
+                <a href="/add">Add</a>
+            </li>
+        </ul>
+    </nav>
+    <h1>{{.}}</h1> <!-- 왜 여기서 에러 발생하지? -->
+</header>
+    <!-- <h1>{{.PageTitle}}</h1> 더이상 데이터를 직접적으로 받지 않음 template으로 전달 받으므로 입력된 인풋 . 만-->
+    
+
+
+{{end}}

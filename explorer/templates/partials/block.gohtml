@@ -1,0 +1,12 @@
+{{define "block"}}
+<div>
+    <ul>
+        <li> {{.Data}} </li><!-- {{.Data}} Block의 Data를  가져옴  -->
+        <li> {{.Hash}} </li><!-- 대문자로 시작해야하고 struct에 있는 field명이랑 같아야함  -->
+        {{if .PreviousHash}}
+        <li> {{.PreviousHash}} </li>
+        {{end}}
+    </ul>
+    </div>
+    <hr />
+{{end}}

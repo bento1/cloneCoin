@@ -1,0 +1,16 @@
+{{define "home"}}
+<!DOCTYPE html>
+<html lang="en">
+    {{template "head" .PageTitle}}
+    <body>
+    {{template "header" }}
+    <main>
+    <h1><center> HOME </center></h1>
+    {{range .Blocks }}<!-- range - end가 세트이고 range내부에서 쓰는 variable은 모두 Blocks의 내부 field를 의미  -->
+        {{template "block" . }}<!--range안의 .는 block을 의미한다.  -->
+    {{end}}
+    </main>
+    {{template "footer"}}
+    </body>
+</html>
+{{end}}
