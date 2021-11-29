@@ -6,14 +6,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/cloneCoin/blockchain"
+	"github.com/bento1/cloneCoin/blockchain"
 )
 
 const (
-	port        string = ":4000"
 	templateDir string = "explorer/templates/"
 )
 
+var port string
 var templates *template.Template // 모든 template는 templates 변수로 컨트롤 하겠음
 
 type homeData struct {
@@ -38,12 +38,20 @@ func add(rw http.ResponseWriter, r *http.Request) {
 
 	}
 }
-func Start() {
+func Start(intport int) {
+	port = fmt.Sprintf(":%d", intport)
+	handler_explorer := http.NewServeMux()
 	templates = template.Must(template.ParseGlob(templateDir + "pages/*.gohtml"))     //home, add page 로드
 	templates = template.Must(templates.ParseGlob(templateDir + "partials/*.gohtml")) // ultities  gohtml  파일들 로드
-	http.HandleFunc("/", home)
-	http.HandleFunc("/add", add)
+	handler_explorer.HandleFunc("/", home)
+	handler_explorer.HandleFunc("/add", add)
 	fmt.Printf("Listening on http://localhost%s\n", port)
-	log.Fatal(http.ListenAndServe(port, nil))
-
+	log.Fatal(http.ListenAndServe(port, handler_explorer))
+	// 동시에 실행할 수없다. 먼저 한개만 하고있음 포트가 달라도 url이 같음
+	// go explorer.Start(3000)
+	// rest.Start(4000) http가  multipleresigistration이라고 표시되어있음 HandleFunc이 같은 url안에 작동되어있음
+	// ListenAndServe() 보면 multipDefaultServeMux multiplexer는 리퀘스트 보내면 url을 보고 있다가 핸들러를 호출
+	// 같은 멀티플레서를 rest와 explorer에서 사용하니깐
+	// 새로운 멀티플렉서 설계해줌 서로다른 url 핸들러를 사용하게한다.
+	// http.NewServeMux()
 }

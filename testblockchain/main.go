@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/cloneCoin/blockchain"
+	"github.com/bento1/cloneCoin/blockchain"
 )
 
 // B1
