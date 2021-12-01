@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"sync"
 )
@@ -9,9 +10,10 @@ import (
 //ver1 21-11-25 only blockchain develop
 //여러 기능을 추가하면서 refactoring을 계속 할 것임 ... transaction, database..
 type Block struct {
-	Data         string //transaction 등이 바뀔수 있다.
-	Hash         string
-	PreviousHash string
+	Data         string `json:"data"` //transaction 등이 바뀔수 있다.
+	Hash         string `json:"hash"`
+	PreviousHash string `json:"previoushash,omitempty"`
+	Height       int    `json:"height"`
 }
 type blockchain struct {
 	// blocks []block
@@ -22,7 +24,7 @@ var b *blockchain //singleton pattern 이녀석을  외부에서 읽게함-> 1�
 var once sync.Once
 
 func createBlock(data string) *Block {
-	newBlock := Block{data, "", getLastHash()}
+	newBlock := Block{data, "", getLastHash(), len(GetBlockChain().blocks) + 1}
 	newBlock.calculateHash()
 	return &newBlock
 }
@@ -60,4 +62,13 @@ func (b *blockchain) AddBlock(data string) {
 }
 func (b *blockchain) ListBlocks() []*Block {
 	return GetBlockChain().blocks
+}
+
+var ErrNotFound = errors.New("block nor found")
+
+func (b *blockchain) GetBlock(height int) (*Block, error) {
+	if height > len(b.blocks) {
+		return nil, ErrNotFound
+	}
+	return b.blocks[height-1], nil
 }

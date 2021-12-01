@@ -1,8 +1,6 @@
 package main
 
-import (
-	"github.com/bento1/cloneCoin/blockchain"
-)
+import "go/github.com/bento1/cloneCoin/blockchain"
 
 // B1
 // 	b1Hash=(data+"")
@@ -20,6 +18,7 @@ func main() {
 	// hash := fmt.Sprintf("%x", hash_) //hexaHash로 변경
 	// genesisBlock.hash = hash
 	// fmt.Println(genesisBlock)
+
 	chain := blockchain.GetBlockChain()
 	// chain.AddBlock("Genesis Block")
 	chain.AddBlock("Second Block")
