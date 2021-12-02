@@ -3,7 +3,7 @@ package db
 import (
 	"github.com/bento1/cloneCoin/utils"
 
-	"github.com/boltdb/bolt"
+	bolt "github.com/boltdb/bolt"
 )
 
 const (

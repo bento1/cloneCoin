@@ -14,7 +14,7 @@ import (
 
 	"github.com/bento1/cloneCoin/blockchain"
 
-	"github.com/gorilla/mux"
+	mux "github.com/gorilla/mux"
 )
 
 type url string
