@@ -18,6 +18,13 @@ type Block struct {
 type blockchain struct {
 	// blocks []block
 	blocks []*Block // 복사하고싶지 않음
+	// Block의 array로 저장하고 있는데, 이는 메모리에 올라가 있음
+	// 재시작되면 Genesis부터 시작하게된다.
+	// Blockchain 은 가장 마지막의 hash의 포인터만 남긴다.
+	// 븍록체인 구조를 DB에 검색할 수 있게하는 메소드 집합체로만드는것이 더좋을것
+	// 예를 들면 DB에서 특정 해쉬를 찾는 함수를 만드는거나
+	// 아님 블록전체를 가져오는 것을 만들거나
+	// 모든 블럭은 url height로 저장됨
 }
 
 var b *blockchain //singleton pattern 이녀석을  외부에서 읽게함-> 1개의 인스턴스만 존재하게됨
