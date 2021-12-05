@@ -1,9 +1,7 @@
 package blockchain
 
 import (
-	"bytes"
 	"crypto/sha256"
-	"encoding/gob"
 	"fmt"
 
 	"github.com/github.com/bento1/cloneCoin/db"
@@ -17,16 +15,8 @@ type Block struct {
 	Height       int    `json:"height"`
 }
 
-func (b *Block) toBytea() []byte {
-	// return []byte(*b)// 이렇게 안된다.
-	//gob이라는 패키지를 사용
-	var blockbuffer bytes.Buffer
-	encoder := gob.NewEncoder(&blockbuffer)
-	utils.HandleErr(encoder.Encode(b))
-	return blockbuffer.Bytes()
-}
 func (b *Block) persist() {
-	db.SaveBlock(b.Hash, b.toBytea())
+	db.SaveBlock(b.Hash, utils.ToBytea(b))
 }
 func createBlock(data string, previoushash string, height int) *Block {
 	block := Block{

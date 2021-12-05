@@ -2,6 +2,9 @@ package blockchain
 
 import (
 	"sync"
+
+	"github.com/github.com/bento1/cloneCoin/db"
+	"github.com/github.com/bento1/cloneCoin/utils"
 )
 
 type blockchain struct { //이제 마지막 해쉬만, 길이가 몇인지만 알면된다.
@@ -21,9 +24,14 @@ func BlockChain() *blockchain {
 	}
 	return b
 }
+func (b *blockchain) persist() {
+	db.SaveBLockChain(utils.ToBytea(b))
+}
+
 func (b *blockchain) AddBlock(data string) {
 	block := createBlock(data, b.NewestHash, b.Height+1)
 	b.NewestHash = block.Hash
 	b.Height = block.Height
+	b.persist()
 
 }
