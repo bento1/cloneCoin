@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"./github.com/bento1/cloneCoin/utils"
+	"github.com/bento1/cloneCoin/utils"
 	"github.com/boltdb/bolt"
 )
 
@@ -38,7 +38,7 @@ func DB() *bolt.DB {
 	return db
 }
 
-func GetBlockChain() []byte {
+func BlockChain() []byte {
 	var data []byte
 	DB().View(func(t *bolt.Tx) error {
 		bucket := t.Bucket([]byte(dataBucket))
