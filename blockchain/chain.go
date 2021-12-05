@@ -1,6 +1,8 @@
 package blockchain
 
 import (
+	"bytes"
+	"encoding/gob"
 	"sync"
 
 	"github.com/bento1/cloneCoin/db"
@@ -15,11 +17,24 @@ type blockchain struct { //이제 마지막 해쉬만, 길이가 몇인지만 �
 var b *blockchain
 var once sync.Once
 
+func (b *blockchain) restore(data []byte) {
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	decoder.Decode(b)
+
+}
 func BlockChain() *blockchain {
 	if b == nil {
 		once.Do(func() {
 			b = &blockchain{"", 0}
-			b.AddBlock("Genesis Block")
+			// search checkpoint onthe db
+			// restore b from bytea
+			persistedBlockChain := db.BlockChain()
+			if persistedBlockChain == nil {
+				b.AddBlock("Genesis Block")
+			} else {
+				b.restore(persistedBlockChain)
+			}
+
 		})
 	}
 	return b

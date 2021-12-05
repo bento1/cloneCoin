@@ -11,6 +11,7 @@ const (
 	dbName       = "blockchain.db"
 	dataBucket   = "data"
 	blocksBucket = "blocks"
+	checkpoint   = "checkpoint"
 )
 
 var db *bolt.DB
@@ -51,8 +52,18 @@ func SaveBlock(key string, value []byte) { //key는 hash가 됨, value는 block�
 func SaveBlockChain(data []byte) { //마지막 해쉬와 Height가 담긴 blockchain이 저장된다.
 	err := DB().Update(func(t *bolt.Tx) error {
 		bucket := t.Bucket([]byte(dataBucket))
-		err := bucket.Put([]byte("blockchain"), data)
+		err := bucket.Put([]byte(checkpoint), data)
 		return err
 	})
 	utils.HandleErr(err)
+}
+
+func BlockChain() []byte {
+	var data []byte
+	DB().View(func(t *bolt.Tx) error {
+		bucket := t.Bucket([]byte(dataBucket))
+		data = bucket.Get([]byte(checkpoint))
+		return nil
+	})
+	return data
 }
