@@ -3,8 +3,8 @@ package db
 import (
 	"fmt"
 
+	"github.com/bento1/cloneCoin/utils"
 	"github.com/boltdb/bolt"
-	"github.com/cloneCoin/utils"
 )
 
 const (
@@ -48,7 +48,7 @@ func SaveBlock(key string, value []byte) { //key는 hash가 됨, value는 block�
 	utils.HandleErr(err)
 }
 
-func SaveBLockChain(data []byte) { //마지막 해쉬와 Height가 담긴 blockchain이 저장된다.
+func SaveBlockChain(data []byte) { //마지막 해쉬와 Height가 담긴 blockchain이 저장된다.
 	err := DB().Update(func(t *bolt.Tx) error {
 		bucket := t.Bucket([]byte(dataBucket))
 		err := bucket.Put([]byte("blockchain"), data)
