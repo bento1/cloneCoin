@@ -22,6 +22,7 @@ func DB() *bolt.DB {
 	if db == nil {
 		// once.Do()
 		dbPointer, err := bolt.Open(dbName, 0600, nil)
+
 		utils.HandleErr(err)
 
 		db = dbPointer
