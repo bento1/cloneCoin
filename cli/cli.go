@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bento1/cloneCoin/explorer"
-	"github.com/bento1/cloneCoin/rest"
+	"./github.com/bento1/cloneCoin/explorer"
+	"./github.com/bento1/cloneCoin/rest"
 )
 
 func usage() {

@@ -10,9 +10,9 @@ import (
 
 	"net/http"
 
-	"github.com/bento1/cloneCoin/utils"
+	"./github.com/bento1/cloneCoin/utils"
 
-	"github.com/bento1/cloneCoin/blockchain"
+	"./github.com/bento1/cloneCoin/blockchain"
 
 	mux "github.com/gorilla/mux"
 )

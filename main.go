@@ -9,4 +9,5 @@ func main() {
 	blockchain.BlockChain().AddBlock("First Block")
 	blockchain.BlockChain().AddBlock("Second Block")
 	blockchain.BlockChain().AddBlock("Third Block")
+
 }

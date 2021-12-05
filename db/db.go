@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"github.com/bento1/cloneCoin/utils"
+	"./github.com/bento1/cloneCoin/utils"
 	"github.com/boltdb/bolt"
 )
 
@@ -20,7 +20,7 @@ var db *bolt.DB
 
 func DB() *bolt.DB {
 	if db == nil {
-		// once.Do()
+
 		dbPointer, err := bolt.Open(dbName, 0600, nil)
 
 		utils.HandleErr(err)
@@ -37,7 +37,8 @@ func DB() *bolt.DB {
 	}
 	return db
 }
-func BlockChain() []byte {
+
+func GetBlockChain() []byte {
 	var data []byte
 	DB().View(func(t *bolt.Tx) error {
 		bucket := t.Bucket([]byte(dataBucket))
@@ -46,7 +47,6 @@ func BlockChain() []byte {
 	})
 	return data
 }
-
 func SaveBlock(key string, value []byte) { //key는 hash가 됨, value는 block을 저장함
 	fmt.Printf("Saving Block\nhash: %s\ndata %b\n", key, value)
 	err := DB().Update(func(t *bolt.Tx) error {

@@ -28,7 +28,7 @@ func BlockChain() *blockchain {
 			b = &blockchain{"", 0}
 			// search checkpoint onthe db
 			// restore b from bytea
-			persistedBlockChain := db.
+			persistedBlockChain := db.GetBlockChain()
 			if persistedBlockChain == nil {
 				b.AddBlock("Genesis Block")
 			} else {

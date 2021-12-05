@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bento1/cloneCoin/blockchain"
+	"./github.com/bento1/cloneCoin/blockchain"
 )
 
 const (
