@@ -4,8 +4,8 @@ import (
 	"crypto/sha256"
 	"fmt"
 
-	"github.com/github.com/bento1/cloneCoin/db"
-	"github.com/github.com/bento1/cloneCoin/utils"
+	"github.com/bento1/cloneCoin/db"
+	"github.com/bento1/cloneCoin/utils"
 )
 
 type Block struct {

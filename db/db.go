@@ -3,9 +3,8 @@ package db
 import (
 	"fmt"
 
-	"github.com/bento1/cloneCoin/utils"
-
 	"github.com/boltdb/bolt"
+	"github.com/cloneCoin/utils"
 )
 
 const (
