@@ -37,6 +37,15 @@ func DB() *bolt.DB {
 	}
 	return db
 }
+func BlockChain() []byte {
+	var data []byte
+	DB().View(func(t *bolt.Tx) error {
+		bucket := t.Bucket([]byte(dataBucket))
+		data = bucket.Get([]byte(checkpoint))
+		return nil
+	})
+	return data
+}
 
 func SaveBlock(key string, value []byte) { //key는 hash가 됨, value는 block을 저장함
 	fmt.Printf("Saving Block\nhash: %s\ndata %b\n", key, value)
@@ -56,14 +65,4 @@ func SaveBlockChain(data []byte) { //마지막 해쉬와 Height가 담긴 blockc
 		return err
 	})
 	utils.HandleErr(err)
-}
-
-func BlockChain() []byte {
-	var data []byte
-	DB().View(func(t *bolt.Tx) error {
-		bucket := t.Bucket([]byte(dataBucket))
-		data = bucket.Get([]byte(checkpoint))
-		return nil
-	})
-	return data
 }
