@@ -1,6 +1,6 @@
 package main
 
-import "go/github.com/bento1/cloneCoin/blockchain"
+import "github.com/bento1/cloneCoin/blockchain"
 
 // B1
 // 	b1Hash=(data+"")

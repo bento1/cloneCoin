@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
-	"go/github.com/bento1/cloneCoin/utils"
+	"github.com/bento1/cloneCoin/utils"
 
-	"go/github.com/bento1/cloneCoin/blockchain"
+	"github.com/bento1/cloneCoin/blockchain"
 )
 
 type URL string

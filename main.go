@@ -1,9 +1,11 @@
 package main
 
 import (
-	"go/github.com/bento1/cloneCoin/cli"
+	// "github.com/bento1/cloneCoin/cli"
+	"github.com/github.com/bento1/cloneCoin/blockchain"
 )
 
 func main() {
-	cli.Start()
+	// cli.Start()
+	blockchain.BlockChain()
 }

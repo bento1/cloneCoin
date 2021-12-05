@@ -3,9 +3,10 @@ package cli
 import (
 	"flag"
 	"fmt"
-	"go/github.com/bento1/cloneCoin/explorer"
-	"go/github.com/bento1/cloneCoin/rest"
 	"os"
+
+	"github.com/bento1/cloneCoin/explorer"
+	"github.com/bento1/cloneCoin/rest"
 )
 
 func usage() {
