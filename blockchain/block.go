@@ -2,10 +2,11 @@ package blockchain
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 
-	"./github.com/bento1/cloneCoin/db"
-	"./github.com/bento1/cloneCoin/utils"
+	"github.com/github.com/bento1/cloneCoin/db"
+	"github.com/github.com/bento1/cloneCoin/utils"
 )
 
 type Block struct {
@@ -29,4 +30,19 @@ func createBlock(data string, previoushash string, height int) *Block {
 	block.Hash = fmt.Sprintf("%x", sha256.Sum256([]byte(payload)))
 	block.persist()
 	return &block
+}
+
+var ErrNotFound = errors.New("block not found")
+
+func (b *Block) restore(data []byte) {
+	utils.FromBytea(b, data)
+}
+func FindBlock(hash string) (*Block, error) {
+	blockBytes := db.Block(hash)
+	if blockBytes == nil {
+		return nil, ErrNotFound
+	}
+	block := &Block{}
+	block.restore(blockBytes)
+	return block, nil
 }

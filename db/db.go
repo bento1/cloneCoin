@@ -3,8 +3,8 @@ package db
 import (
 	"fmt"
 
-	"github.com/bento1/cloneCoin/utils"
 	"github.com/boltdb/bolt"
+	"github.com/github.com/bento1/cloneCoin/utils"
 )
 
 const (
@@ -17,7 +17,9 @@ const (
 var db *bolt.DB
 
 // var once sync.Once
-
+func Close() {
+	DB().Close()
+}
 func DB() *bolt.DB {
 	if db == nil {
 
@@ -38,11 +40,20 @@ func DB() *bolt.DB {
 	return db
 }
 
-func BlockChain() []byte {
+func CheckPoint() []byte {
 	var data []byte
 	DB().View(func(t *bolt.Tx) error {
 		bucket := t.Bucket([]byte(dataBucket))
 		data = bucket.Get([]byte(checkpoint))
+		return nil
+	})
+	return data
+}
+func Block(hash string) []byte {
+	var data []byte
+	DB().View(func(t *bolt.Tx) error {
+		bucket := t.Bucket([]byte(blocksBucket))
+		data = bucket.Get([]byte(hash))
 		return nil
 	})
 	return data

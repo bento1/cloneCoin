@@ -4,9 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 
-	"./github.com/bento1/cloneCoin/explorer"
-	"./github.com/bento1/cloneCoin/rest"
+	"github.com/github.com/bento1/cloneCoin/explorer"
+	"github.com/github.com/bento1/cloneCoin/rest"
 )
 
 func usage() {
@@ -14,7 +15,9 @@ func usage() {
 	fmt.Printf("Please use the following flags\n")
 	fmt.Printf("-port=4000 explorer : Start the HTML Explorer\n")
 	fmt.Printf("-mode=rest : Start the REST API (recommenended)\n")
-	os.Exit(0) // 0은 에러가 없음
+	// os.Exit(0) // 0은 에러가 없음 , 아래로 대체
+	runtime.Goexit() // 프로그램종료전, defer 수행한다. defer에 db를 close를 하는 명령어를 넣었다.
+
 }
 
 //flag 패키지 사용

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"./github.com/bento1/cloneCoin/blockchain"
+	"github.com/github.com/bento1/cloneCoin/blockchain"
 )
 
 const (
@@ -22,7 +22,7 @@ type homeData struct {
 }
 
 func home(rw http.ResponseWriter, r *http.Request) {
-	data := homeData{"Home", blockchain.GetBlockChain().ListBlocks()}
+	data := homeData{"Home", nil}
 	templates.ExecuteTemplate(rw, "home", data) // 위에 전역변수로 설정하였음
 }
 func add(rw http.ResponseWriter, r *http.Request) {
@@ -30,9 +30,9 @@ func add(rw http.ResponseWriter, r *http.Request) {
 	case "GET":
 		templates.ExecuteTemplate(rw, "add", nil)
 	case "POST":
-		r.ParseForm()                             // Post에 검색해서 찾으면 ParseForm, Form 순으로 부르면 됨
-		data := r.Form.Get("blockData")           //Form은 Value라고 나와있음 add page에 input에 name설정한 부분
-		blockchain.GetBlockChain().AddBlock(data) // 찾은 값으로 BLock을 추가해줌
+		r.ParseForm()                          // Post에 검색해서 찾으면 ParseForm, Form 순으로 부르면 됨
+		data := r.Form.Get("blockData")        //Form은 Value라고 나와있음 add page에 input에 name설정한 부분
+		blockchain.BlockChain().AddBlock(data) // 찾은 값으로 BLock을 추가해줌
 		//redirection을 하고싶다. 공식 문서 검색->  찾아봄 ->
 		http.Redirect(rw, r, "/", http.StatusPermanentRedirect)
 

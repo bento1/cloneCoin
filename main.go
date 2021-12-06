@@ -1,13 +1,14 @@
 package main
 
-import "github.com/bento1/cloneCoin/blockchain"
-
-// "github.com/bento1/cloneCoin/cli"
+import (
+	"github.com/github.com/bento1/cloneCoin/blockchain"
+	"github.com/github.com/bento1/cloneCoin/cli"
+	"github.com/github.com/bento1/cloneCoin/db"
+)
 
 func main() {
-	// cli.Start()
-	blockchain.BlockChain().AddBlock("First Block")
-	blockchain.BlockChain().AddBlock("Second Block")
-	blockchain.BlockChain().AddBlock("Third Block")
+	defer db.Close()
+	blockchain.BlockChain()
+	cli.Start()
 
 }

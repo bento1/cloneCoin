@@ -2,7 +2,6 @@ package rest
 
 import (
 	"encoding/json"
-	"strconv"
 
 	"fmt"
 
@@ -10,10 +9,8 @@ import (
 
 	"net/http"
 
-	"./github.com/bento1/cloneCoin/utils"
-
-	"./github.com/bento1/cloneCoin/blockchain"
-
+	"github.com/github.com/bento1/cloneCoin/blockchain"
+	"github.com/github.com/bento1/cloneCoin/utils"
 	mux "github.com/gorilla/mux"
 )
 
@@ -71,13 +68,15 @@ var port string
 func blocks(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		// rw.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(rw).Encode(blockchain.GetBlockChain().ListBlocks())
+		// // rw.Header().Add("Content-Type", "application/json")
+		// return
+		json.NewEncoder(rw).Encode(blockchain.BlockChain().Blocks())
 	case "POST":
-		// rw.Header().Add("Content-Type", "application/json")
+		// // rw.Header().Add("Content-Type", "application/json")
+		// return
 		var addBlockBody addBlockBody
 		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody)) //원본이 아닐수 있으니 원본을 보내야지
-		blockchain.GetBlockChain().AddBlock(addBlockBody.Message)
+		blockchain.BlockChain().AddBlock(addBlockBody.Message)
 		rw.WriteHeader(http.StatusCreated)
 
 	}
@@ -85,9 +84,11 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 func block(rw http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fmt.Println(vars)
-	id, err_conversion := strconv.Atoi(vars["height"])
-	utils.HandleErr(err_conversion)
-	block, err_getblock := blockchain.GetBlockChain().GetBlock(id)
+	// id, err_conversion := strconv.Atoi(vars["height"])hash 페이지로 변경하였음
+	id := vars["hash"]
+
+	// block, err_getblock := blockchain.GetBlockChain().GetBlock(id)
+	block, err_getblock := blockchain.FindBlock(id)
 	encoder := json.NewEncoder(rw)
 	if err_getblock == blockchain.ErrNotFound {
 		encoder.Encode(errorResponse{fmt.Sprint(err_getblock)})
@@ -121,7 +122,7 @@ func Start(intport int) {
 	handler_rest.Use(jsonContentTypeMiddleware)
 	handler_rest.HandleFunc("/", documentation).Methods("GET")
 	handler_rest.HandleFunc("/blocks", blocks).Methods("GET", "POST")
-	handler_rest.HandleFunc("/blocks/{height:[0-9]+}", block).Methods("GET")
+	handler_rest.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET") //[0-9]숫자 hexadecimal은 [a-f]까지 가지는 형식
 	fmt.Printf("Listening on http://localhost%s", port)
 	log.Fatal(http.ListenAndServe(port, handler_rest))
 	// 동시에 실행할 수없다. 먼저 한개만 하고있음 포트가 달라도 url이 같음
