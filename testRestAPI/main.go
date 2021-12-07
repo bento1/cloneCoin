@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/bento1/cloneCoin/utils"
+	"github.com/github.com/bento1/cloneCoin/utils"
 
-	"github.com/bento1/cloneCoin/blockchain"
+	"github.com/github.com/bento1/cloneCoin/blockchain"
 )
 
 type URL string
@@ -73,7 +73,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		rw.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(rw).Encode(blockchain.GetBlockChain().ListBlocks())
+		json.NewEncoder(rw).Encode(blockchain.BlockChain().Blocks())
 	case "POST":
 		// POST요청이온 메시지를 GOLANG struct로 decode해줘야함. NewDecoder는 reader를 받는데
 		// r.Body로  부를수 있고 Decode는 포인터를 받음
@@ -82,7 +82,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 		fmt.Println(addBlockBody)
 		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody)) //원본이 아닐수 있으니 원본을 보내야지
 		fmt.Println(addBlockBody)
-		blockchain.GetBlockChain().AddBlock(addBlockBody.Message)
+		blockchain.BlockChain().AddBlock(addBlockBody.Message)
 		rw.WriteHeader(http.StatusCreated)
 	}
 }

@@ -2,7 +2,9 @@ package utils
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/gob"
+	"fmt"
 	"log"
 )
 
@@ -21,4 +23,9 @@ func ToBytea(i interface{}) []byte {
 func FromBytea(i interface{}, data []byte) {
 	decoder := gob.NewDecoder(bytes.NewReader(data))
 	HandleErr(decoder.Decode(i)) //없으면 nil return함
+}
+
+func Hash(i interface{}) string {
+	hash := fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("%v", i)))) //v는 인터페이스 formatting해줌
+	return hash
 }

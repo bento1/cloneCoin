@@ -46,6 +46,11 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Description: "See Documentation",
 		},
 		{
+			URL:         url("/status"),
+			Method:      "GET",
+			Description: "See the Status of the BlockChain",
+		},
+		{
 			URL:         url("/blocks"),
 			Method:      "POST",
 			Description: "Add A block",
@@ -97,6 +102,15 @@ func block(rw http.ResponseWriter, r *http.Request) {
 	}
 
 }
+func status(rw http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		// // rw.Header().Add("Content-Type", "application/json")
+		// return
+		json.NewEncoder(rw).Encode(blockchain.BlockChain())
+
+	}
+}
 
 // middleware 설계 adapter 패턴
 // 모든 함수에 rw.Header().Add("Content-Type", "application/json") 가 들어간다. 이함수는 json 타입을 rw에 써주는것을 알려주는 역할임
@@ -121,6 +135,7 @@ func Start(intport int) {
 	handler_rest := mux.NewRouter()
 	handler_rest.Use(jsonContentTypeMiddleware)
 	handler_rest.HandleFunc("/", documentation).Methods("GET")
+	handler_rest.HandleFunc("/status", status).Methods("GET")
 	handler_rest.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	handler_rest.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET") //[0-9]숫자 hexadecimal은 [a-f]까지 가지는 형식
 	fmt.Printf("Listening on http://localhost%s", port)
