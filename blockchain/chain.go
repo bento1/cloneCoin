@@ -34,7 +34,7 @@ func BlockChain() *blockchain {
 			// restore b from bytea
 			checkpoint := db.CheckPoint()
 			if checkpoint == nil {
-				b.AddBlock("Genesis Block")
+				b.AddBlock()
 			} else {
 				fmt.Println("Restoring...")
 				b.restore(checkpoint)
@@ -49,8 +49,8 @@ func (b *blockchain) persist() {
 	db.SaveBlockChain(utils.ToBytea(b))
 }
 
-func (b *blockchain) AddBlock(data string) {
-	block := createBlock(data, b.NewestHash, b.Height+1)
+func (b *blockchain) AddBlock() {
+	block := createBlock(b.NewestHash, b.Height+1)
 	b.NewestHash = block.Hash
 	b.Height = block.Height
 	b.CurrentDifficulty = block.Difficulty
@@ -101,4 +101,36 @@ func (b *blockchain) difficulty() int {
 		//아니면 이전 difficulty를 불러옴
 		return b.CurrentDifficulty
 	}
+}
+
+func (b *blockchain) txOuts() []*TxOut {
+	var txOuts []*TxOut
+	blocks := b.Blocks()
+	for _, block := range blocks {
+		for _, tx := range block.Transactions {
+			txOuts = append(txOuts, tx.TxOuts...) //저절로 extend 될듯
+		}
+	}
+	return txOuts
+}
+
+func (b *blockchain) TxOutsByAddress(address string) []*TxOut {
+	var ownedTxOutputs []*TxOut
+	txOuts := b.txOuts()
+	for _, txOut := range txOuts {
+		if txOut.Owner == address {
+			ownedTxOutputs = append(ownedTxOutputs, txOut)
+		}
+
+	}
+	return ownedTxOutputs
+}
+
+func (b *blockchain) BalanceByAddress(address string) int {
+	txOuts := b.TxOutsByAddress(address)
+	var amount int
+	for _, txout := range txOuts {
+		amount += txout.Amount
+	}
+	return amount
 }

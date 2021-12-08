@@ -11,6 +11,7 @@ import (
 
 	"github.com/github.com/bento1/cloneCoin/blockchain"
 	"github.com/github.com/bento1/cloneCoin/utils"
+
 	mux "github.com/gorilla/mux"
 )
 
@@ -20,6 +21,10 @@ type addBlockBody struct {
 }
 type errorResponse struct {
 	ErrorMessage string `json:"errormessage"`
+}
+type balanceResponse struct {
+	Address string `json:address`
+	Balance int    `json:balance`
 }
 
 func (u url) MarshalText() ([]byte, error) {
@@ -61,6 +66,11 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			Method:      "GET",
 			Description: "See A block",
 		},
+		{
+			URL:         url("/balance/{address}"),
+			Method:      "GET",
+			Description: "Get balance about address",
+		},
 	}
 
 	// rw.Header().Add("Content-Type", "application/json") // 브라우저에게 보낸 string이 json임을 알려줌
@@ -73,15 +83,9 @@ var port string
 func blocks(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		// // rw.Header().Add("Content-Type", "application/json")
-		// return
 		json.NewEncoder(rw).Encode(blockchain.BlockChain().Blocks())
 	case "POST":
-		// // rw.Header().Add("Content-Type", "application/json")
-		// return
-		var addBlockBody addBlockBody
-		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody)) //원본이 아닐수 있으니 원본을 보내야지
-		blockchain.BlockChain().AddBlock(addBlockBody.Message)
+		blockchain.BlockChain().AddBlock()
 		rw.WriteHeader(http.StatusCreated)
 
 	}
@@ -111,6 +115,22 @@ func status(rw http.ResponseWriter, r *http.Request) {
 
 	}
 }
+func balance(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	address := vars["address"]
+	total := r.URL.Query().Get("total")
+	switch r.Method {
+	case "GET":
+		switch total {
+		case "true":
+			amount := blockchain.BlockChain().BalanceByAddress(address)
+			utils.HandleErr(json.NewEncoder(rw).Encode(balanceResponse{Address: address, Balance: amount}))
+		default:
+			utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.BlockChain().TxOutsByAddress(address)))
+		}
+
+	}
+}
 
 // middleware 설계 adapter 패턴
 // 모든 함수에 rw.Header().Add("Content-Type", "application/json") 가 들어간다. 이함수는 json 타입을 rw에 써주는것을 알려주는 역할임
@@ -136,15 +156,11 @@ func Start(intport int) {
 	handler_rest.Use(jsonContentTypeMiddleware)
 	handler_rest.HandleFunc("/", documentation).Methods("GET")
 	handler_rest.HandleFunc("/status", status).Methods("GET")
+	handler_rest.HandleFunc("/balance/{address}", balance).Methods("GET") //거래목록을 봄
+	// handler_rest.HandleFunc("/balance/{address}?total=ture", balance).Methods("GET") //total balance를 본다 ?total-true는 따로 만드는게아니라 옵션이있음
 	handler_rest.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	handler_rest.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET") //[0-9]숫자 hexadecimal은 [a-f]까지 가지는 형식
 	fmt.Printf("Listening on http://localhost%s", port)
 	log.Fatal(http.ListenAndServe(port, handler_rest))
-	// 동시에 실행할 수없다. 먼저 한개만 하고있음 포트가 달라도 url이 같음
-	// go explorer.Start(3000)
-	// rest.Start(4000) http가  multipleresigistration이라고 표시되어있음 HandleFunc이 같은 url안에 작동되어있음
-	// ListenAndServe() 보면 multipDefaultServeMux multiplexer는 리퀘스트 보내면 url을 보고 있다가 핸들러를 호출
-	// 같은 멀티플레서를 rest와 explorer에서 사용하니깐
-	// 새로운 멀티플렉서 설계해줌 서로다른 url 핸들러를 사용하게한다.
-	// http.NewServeMux()
+
 }

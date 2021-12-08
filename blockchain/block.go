@@ -13,13 +13,13 @@ import (
 // const difficulty int = 2
 
 type Block struct {
-	Data         string `json:"data"`
 	Hash         string `json:"hash"`
 	PreviousHash string `json:"previoushash,omitempty"`
 	Height       int    `json:"height"`
 	Difficulty   int    `json:"difficulty"`
 	Nonce        int    `json:nonce` // 유저가 채굴할떄 쓰는 변경가능한 값
 	Timestamp    int    `json:"timestamp"`
+	Transactions []*Tx  `json:"transactions"`
 }
 
 func (b *Block) persist() {
@@ -42,14 +42,14 @@ func (b *Block) mine() {
 	}
 
 }
-func createBlock(data string, previoushash string, height int) *Block {
+func createBlock(previoushash string, height int) *Block {
 	block := Block{
-		Data:         data,
 		Hash:         "",
 		PreviousHash: previoushash,
 		Height:       height,
 		Difficulty:   BlockChain().difficulty(),
 		Nonce:        0,
+		Transactions: []*Tx{makeCoinBaseTx("dongun")},
 	} //통쨰로
 	block.mine()
 	block.persist()

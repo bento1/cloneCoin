@@ -30,10 +30,7 @@ func add(rw http.ResponseWriter, r *http.Request) {
 	case "GET":
 		templates.ExecuteTemplate(rw, "add", nil)
 	case "POST":
-		r.ParseForm()                          // Post에 검색해서 찾으면 ParseForm, Form 순으로 부르면 됨
-		data := r.Form.Get("blockData")        //Form은 Value라고 나와있음 add page에 input에 name설정한 부분
-		blockchain.BlockChain().AddBlock(data) // 찾은 값으로 BLock을 추가해줌
-		//redirection을 하고싶다. 공식 문서 검색->  찾아봄 ->
+		blockchain.BlockChain().AddBlock()
 		http.Redirect(rw, r, "/", http.StatusPermanentRedirect)
 
 	}

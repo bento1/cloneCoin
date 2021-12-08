@@ -82,7 +82,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 		fmt.Println(addBlockBody)
 		utils.HandleErr(json.NewDecoder(r.Body).Decode(&addBlockBody)) //원본이 아닐수 있으니 원본을 보내야지
 		fmt.Println(addBlockBody)
-		blockchain.BlockChain().AddBlock(addBlockBody.Message)
+		blockchain.BlockChain().AddBlock()
 		rw.WriteHeader(http.StatusCreated)
 	}
 }
