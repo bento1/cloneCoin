@@ -17,12 +17,12 @@ type Block struct {
 	PreviousHash string `json:"previoushash,omitempty"`
 	Height       int    `json:"height"`
 	Difficulty   int    `json:"difficulty"`
-	Nonce        int    `json:nonce` // 유저가 채굴할떄 쓰는 변경가능한 값
+	Nonce        int    `json:"nonce"` // 유저가 채굴할떄 쓰는 변경가능한 값
 	Timestamp    int    `json:"timestamp"`
 	Transactions []*Tx  `json:"transactions"`
 }
 
-func (b *Block) persist() {
+func persistBlock(b *Block) {
 	db.SaveBlock(b.Hash, utils.ToBytea(b))
 }
 func (b *Block) mine() {
@@ -42,17 +42,17 @@ func (b *Block) mine() {
 	}
 
 }
-func createBlock(previoushash string, height int) *Block {
+func createBlock(previoushash string, height int, difficulty int) *Block {
 	block := Block{
 		Hash:         "",
 		PreviousHash: previoushash,
 		Height:       height,
-		Difficulty:   BlockChain().difficulty(),
+		Difficulty:   difficulty,
 		Nonce:        0,
-		Transactions: []*Tx{makeCoinBaseTx("dongun")},
 	} //통쨰로
 	block.mine()
-	block.persist()
+	block.Transactions = Mempool.txToConfirm() //채굴이 끝난 후 진행되어야함
+	persistBlock(&block)
 	return &block
 }
 

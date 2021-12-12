@@ -9,7 +9,7 @@ POST http://localhost:4000/blocks
 }
 
 ###
-http://localhost:4000/blocks/2
+http://localhost:4000/blocks/1
 
 ###
 http://localhost:4000/status
@@ -18,4 +18,21 @@ http://localhost:4000/status
 http://localhost:4000/balance/dongun
 
 ###
+http://localhost:4000/balance/jehyun
+
+###
 http://localhost:4000/balance/dongun?total=true
+
+###
+POST http://localhost:4000/transactions
+
+{
+    "to":"jehyun",
+    "amount":20
+}
+
+###
+http://localhost:4000/mempool
+
+###
+POST http://localhost:4000/blocks

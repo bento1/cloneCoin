@@ -16,15 +16,17 @@ import (
 )
 
 type url string
-type addBlockBody struct {
-	Message string
-}
+
 type errorResponse struct {
 	ErrorMessage string `json:"errormessage"`
 }
 type balanceResponse struct {
-	Address string `json:address`
-	Balance int    `json:balance`
+	Address string `json:"address"`
+	Balance int    `json:"balance"`
+}
+type AddTxPayLoad struct {
+	To     string `json:"to"`
+	Amount int    `json:"amount"`
 }
 
 func (u url) MarshalText() ([]byte, error) {
@@ -83,7 +85,7 @@ var port string
 func blocks(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		json.NewEncoder(rw).Encode(blockchain.BlockChain().Blocks())
+		json.NewEncoder(rw).Encode(blockchain.Blocks(blockchain.BlockChain()))
 	case "POST":
 		blockchain.BlockChain().AddBlock()
 		rw.WriteHeader(http.StatusCreated)
@@ -123,13 +125,27 @@ func balance(rw http.ResponseWriter, r *http.Request) {
 	case "GET":
 		switch total {
 		case "true":
-			amount := blockchain.BlockChain().BalanceByAddress(address)
+			amount := blockchain.BalanceByAddress(blockchain.BlockChain(), address)
 			utils.HandleErr(json.NewEncoder(rw).Encode(balanceResponse{Address: address, Balance: amount}))
 		default:
-			utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.BlockChain().TxOutsByAddress(address)))
+			utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.UTxOutsByAddress(blockchain.BlockChain(), address)))
 		}
 
 	}
+}
+func mempool(rw http.ResponseWriter, r *http.Request) {
+	utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.Mempool.Txs))
+}
+func transactions(rw http.ResponseWriter, r *http.Request) {
+	var payload AddTxPayLoad
+	utils.HandleErr(json.NewDecoder(r.Body).Decode(&payload))
+	err := blockchain.Mempool.AddTx(payload.To, payload.Amount)
+	if err != nil {
+		json.NewEncoder(rw).Encode(errorResponse{"not enough funds"})
+
+	}
+	rw.WriteHeader(http.StatusCreated)
+
 }
 
 // middleware 설계 adapter 패턴
@@ -159,6 +175,8 @@ func Start(intport int) {
 	handler_rest.HandleFunc("/balance/{address}", balance).Methods("GET") //거래목록을 봄
 	// handler_rest.HandleFunc("/balance/{address}?total=ture", balance).Methods("GET") //total balance를 본다 ?total-true는 따로 만드는게아니라 옵션이있음
 	handler_rest.HandleFunc("/blocks", blocks).Methods("GET", "POST")
+	handler_rest.HandleFunc("/mempool", mempool).Methods("GET")
+	handler_rest.HandleFunc("/transactions", transactions).Methods("POST")
 	handler_rest.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET") //[0-9]숫자 hexadecimal은 [a-f]까지 가지는 형식
 	fmt.Printf("Listening on http://localhost%s", port)
 	log.Fatal(http.ListenAndServe(port, handler_rest))

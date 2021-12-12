@@ -73,7 +73,7 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		rw.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(rw).Encode(blockchain.BlockChain().Blocks())
+		json.NewEncoder(rw).Encode(blockchain.Blocks(blockchain.BlockChain()))
 	case "POST":
 		// POST요청이온 메시지를 GOLANG struct로 decode해줘야함. NewDecoder는 reader를 받는데
 		// r.Body로  부를수 있고 Decode는 포인터를 받음
