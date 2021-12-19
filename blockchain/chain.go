@@ -21,31 +21,26 @@ const defaultDifficulty int = 2
 const difficultyInterval int = 5
 const blockInterval int = 2
 
+func Txs(b *blockchain) []*Tx {
+	var txs []*Tx
+	for _, block := range Blocks(b) {
+		txs = append(txs, block.Transactions...)
+	}
+	return txs
+}
+func FindTx(b *blockchain, targetId string) *Tx {
+	for _, tx := range Txs(b) {
+		if tx.Id == targetId {
+			return tx
+		}
+	}
+	return nil
+}
 func restoreBlockchain(b *blockchain, data []byte) {
 	utils.FromBytea(b, data)
 }
 
 func BlockChain() *blockchain {
-	//어짜피 한번만 실행하기떄문에 if 삭제함. deadlock이 걸리게됨
-	// if b == nil {
-	// 	once.Do(func() {
-	// 		b = &blockchain{"", 0, defaultDifficulty}
-	// 		fmt.Printf("NewestHash: %s\nHeight: %d\n", b.NewestHash, b.Height)
-	// 		// search checkpoint onthe db
-	// 		// restore b from bytea
-	// 		checkpoint := db.CheckPoint()
-	// 		if checkpoint == nil {
-	// 			b.AddBlock()
-	// 		} else {
-	// 			fmt.Println("Restoring...")
-	// 			restoreBlockchain(b, checkpoint)
-	// 		}
-
-	// 	})
-	// }
-	//Do 함수는 안에 함수가 return하지않으면 멈춰있음
-	//CreateBlock에서 한번더 Blockchain()을 호출함
-	//Do가 끝나지않았는데 Do가 또실행되서 멈춤 CreateBlock안의 Blockchain을 사용하는 difficulty를 입력변수로 한다.
 	once.Do(func() {
 		b = &blockchain{"", 0, defaultDifficulty}
 		fmt.Printf("NewestHash: %s\nHeight: %d\n", b.NewestHash, b.Height)
@@ -121,30 +116,6 @@ func difficulty(b *blockchain) int {
 	}
 }
 
-// txout이 spent인지 unspent인지 모르기 떄문에 다시만들어야함
-// func (b *blockchain) txOuts() []*TxOut {
-// 	var txOuts []*TxOut
-// 	blocks := b.Blocks()
-// 	for _, block := range blocks {
-// 		for _, tx := range block.Transactions {
-// 			txOuts = append(txOuts, tx.TxOuts...) //저절로 extend 될듯
-// 		}
-// 	}
-// 	return txOuts
-// }
-
-// func (b *blockchain) TxOutsByAddress(address string) []*TxOut {
-// 	var ownedTxOutputs []*TxOut
-// 	txOuts := b.txOuts()
-// 	for _, txOut := range txOuts {
-// 		if txOut.Owner == address {
-// 			ownedTxOutputs = append(ownedTxOutputs, txOut)
-// 		}
-
-// 	}
-// 	return ownedTxOutputs
-// }
-
 func UTxOutsByAddress(b *blockchain, address string) []*UTxOut {
 	var UTxOuts []*UTxOut
 	createSTxOut := make(map[string]bool)
@@ -154,13 +125,16 @@ func UTxOutsByAddress(b *blockchain, address string) []*UTxOut {
 	for _, block := range Blocks(b) {
 		for _, tx := range block.Transactions {
 			for _, input := range tx.TxIns {
-				if input.Owner == address {
+				if input.Signature == "COINBASE" {
+					break
+				}
+				if FindTx(b, input.TxID).TxOuts[input.Index].Address == address {
 
 					createSTxOut[input.TxID] = true
 				}
 			}
 			for index, output := range tx.TxOuts {
-				if output.Owner == address {
+				if output.Address == address {
 					if _, ok := createSTxOut[tx.Id]; !ok {
 						//존재하지 않는다 사용한적이없다.
 						//현재코드는 이미 mempool에 올라간 utxout을 검사하지 않는다.

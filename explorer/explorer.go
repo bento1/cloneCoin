@@ -44,11 +44,5 @@ func Start(intport int) {
 	handler_explorer.HandleFunc("/add", add)
 	fmt.Printf("Listening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, handler_explorer))
-	// 동시에 실행할 수없다. 먼저 한개만 하고있음 포트가 달라도 url이 같음
-	// go explorer.Start(3000)
-	// rest.Start(4000) http가  multipleresigistration이라고 표시되어있음 HandleFunc이 같은 url안에 작동되어있음
-	// ListenAndServe() 보면 multipDefaultServeMux multiplexer는 리퀘스트 보내면 url을 보고 있다가 핸들러를 호출
-	// 같은 멀티플레서를 rest와 explorer에서 사용하니깐
-	// 새로운 멀티플렉서 설계해줌 서로다른 url 핸들러를 사용하게한다.
-	// http.NewServeMux()
+
 }

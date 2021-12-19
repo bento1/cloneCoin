@@ -11,6 +11,7 @@ import (
 
 	"github.com/github.com/bento1/cloneCoin/blockchain"
 	"github.com/github.com/bento1/cloneCoin/utils"
+	"github.com/github.com/bento1/cloneCoin/wallet"
 
 	mux "github.com/gorilla/mux"
 )
@@ -27,6 +28,9 @@ type balanceResponse struct {
 type AddTxPayLoad struct {
 	To     string `json:"to"`
 	Amount int    `json:"amount"`
+}
+type myWalletResponse struct {
+	Address string `json:"address"`
 }
 
 func (u url) MarshalText() ([]byte, error) {
@@ -133,17 +137,26 @@ func balance(rw http.ResponseWriter, r *http.Request) {
 
 	}
 }
+func myWallet(rw http.ResponseWriter, r *http.Request) {
+	address := wallet.Wallet().Address
+	utils.HandleErr(json.NewEncoder(rw).Encode(myWalletResponse{Address: address}))
+}
+
 func mempool(rw http.ResponseWriter, r *http.Request) {
 	utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.Mempool.Txs))
 }
+
 func transactions(rw http.ResponseWriter, r *http.Request) {
 	var payload AddTxPayLoad
 	utils.HandleErr(json.NewDecoder(r.Body).Decode(&payload))
 	err := blockchain.Mempool.AddTx(payload.To, payload.Amount)
 	if err != nil {
-		json.NewEncoder(rw).Encode(errorResponse{"not enough funds"})
+		rw.WriteHeader(http.StatusBadRequest)                  //헤더에도 돈이 부족하다고
+		json.NewEncoder(rw).Encode(errorResponse{err.Error()}) //다양한 상황을
+		return
 
 	}
+
 	rw.WriteHeader(http.StatusCreated)
 
 }
@@ -177,8 +190,9 @@ func Start(intport int) {
 	handler_rest.HandleFunc("/blocks", blocks).Methods("GET", "POST")
 	handler_rest.HandleFunc("/mempool", mempool).Methods("GET")
 	handler_rest.HandleFunc("/transactions", transactions).Methods("POST")
+	handler_rest.HandleFunc("/wallet", myWallet).Methods("GET")
 	handler_rest.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET") //[0-9]숫자 hexadecimal은 [a-f]까지 가지는 형식
-	fmt.Printf("Listening on http://localhost%s", port)
+	fmt.Printf("Listening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, handler_rest))
 
 }
