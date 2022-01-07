@@ -6,6 +6,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"log"
+	"strings"
 )
 
 func HandleErr(err error) {
@@ -13,6 +14,7 @@ func HandleErr(err error) {
 		log.Panic(err)
 	}
 }
+
 func ToBytea(i interface{}) []byte {
 	var blockbuffer bytes.Buffer
 	encoder := gob.NewEncoder(&blockbuffer)
@@ -28,4 +30,12 @@ func FromBytea(i interface{}, data []byte) {
 func Hash(i interface{}) string {
 	hash := fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("%v", i)))) //v는 인터페이스 formatting해줌
 	return hash
+}
+
+func Splitter(s string, sep string, i int) string {
+	r := strings.Split(s, sep)
+	if i > len(r)-1 {
+		return ""
+	}
+	return r[i]
 }

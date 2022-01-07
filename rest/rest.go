@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/github.com/bento1/cloneCoin/blockchain"
+	"github.com/github.com/bento1/cloneCoin/p2p"
 	"github.com/github.com/bento1/cloneCoin/utils"
 	"github.com/github.com/bento1/cloneCoin/wallet"
 
@@ -18,6 +19,10 @@ import (
 
 type url string
 
+type addPeerPayload struct {
+	Address string `json:"address"`
+	Port    string `json:"port"`
+}
 type errorResponse struct {
 	ErrorMessage string `json:"errormessage"`
 }
@@ -76,6 +81,11 @@ func documentation(rw http.ResponseWriter, r *http.Request) {
 			URL:         url("/balance/{address}"),
 			Method:      "GET",
 			Description: "Get balance about address",
+		},
+		{
+			URL:         url("/ws"),
+			Method:      "GET",
+			Description: "Upgrade to WebSockets",
 		},
 	}
 
@@ -160,6 +170,18 @@ func transactions(rw http.ResponseWriter, r *http.Request) {
 	rw.WriteHeader(http.StatusCreated)
 
 }
+func peers(rw http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST":
+		var payload addPeerPayload
+		json.NewDecoder(r.Body).Decode(&payload)
+		fmt.Println(payload.Address, payload.Port)
+		p2p.AddPeer(payload.Address, payload.Port, port)
+		rw.WriteHeader(http.StatusOK)
+	case "GET":
+		json.NewEncoder(rw).Encode(p2p.Peers)
+	}
+}
 
 // middleware 설계 adapter 패턴
 // 모든 함수에 rw.Header().Add("Content-Type", "application/json") 가 들어간다. 이함수는 json 타입을 rw에 써주는것을 알려주는 역할임
@@ -177,12 +199,18 @@ func jsonContentTypeMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(rw, r)
 	})
 }
+func loggerMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.URL)
+		next.ServeHTTP(rw, r)
+	})
+}
 func Start(intport int) {
 	port = fmt.Sprintf(":%d", intport)
 	// handler_rest := http.NewServeMux()
 	// handler_rest := mux.NewRouter()
 	handler_rest := mux.NewRouter()
-	handler_rest.Use(jsonContentTypeMiddleware)
+	handler_rest.Use(jsonContentTypeMiddleware, loggerMiddleware)
 	handler_rest.HandleFunc("/", documentation).Methods("GET")
 	handler_rest.HandleFunc("/status", status).Methods("GET")
 	handler_rest.HandleFunc("/balance/{address}", balance).Methods("GET") //거래목록을 봄
@@ -191,6 +219,8 @@ func Start(intport int) {
 	handler_rest.HandleFunc("/mempool", mempool).Methods("GET")
 	handler_rest.HandleFunc("/transactions", transactions).Methods("POST")
 	handler_rest.HandleFunc("/wallet", myWallet).Methods("GET")
+	handler_rest.HandleFunc("/ws", p2p.Upgrade).Methods("GET")
+	handler_rest.HandleFunc("/peers", peers).Methods("GET", "POST")
 	handler_rest.HandleFunc("/blocks/{hash:[a-f0-9]+}", block).Methods("GET") //[0-9]숫자 hexadecimal은 [a-f]까지 가지는 형식
 	fmt.Printf("Listening on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, handler_rest))
