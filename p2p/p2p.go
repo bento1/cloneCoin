@@ -3,6 +3,7 @@ package p2p
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/github.com/bento1/cloneCoin/utils"
 
@@ -24,8 +25,9 @@ func Upgrade(rw http.ResponseWriter, r *http.Request) {
 	}
 	conn, err := upgrader.Upgrade(rw, r, nil) // 3000이 4000으로 보내는 conn
 	utils.HandleErr(err)
-	initPeer(conn, request, openPort)
-
+	peer := initPeer(conn, request, openPort)
+	time.Sleep(20 * time.Second)
+	peer.inbox <- []byte("hello from 3000!")
 }
 
 func AddPeer(address, port, openPort string) { //이함수는 3000이 요청하게 된다.
@@ -33,5 +35,8 @@ func AddPeer(address, port, openPort string) { //이함수는 3000이 요청하�
 	fmt.Printf("ws://%s:%s/ws\n", address, port)
 	conn, _, err := websocket.DefaultDialer.Dial(fmt.Sprintf("ws://%s:%s/ws?openPort=%s", address, port, openPort), nil) //upgrade가 완료되면 4000이 3000으로 보내는 conn
 	utils.HandleErr(err)
-	initPeer(conn, address, port)
+	peer := initPeer(conn, address, port)
+	time.Sleep(10 * time.Second)
+	peer.inbox <- []byte("hello from 4000!")
+
 }
