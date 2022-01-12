@@ -54,7 +54,7 @@ func (p *peer) read() {
 		if err != nil {
 			break
 		}
-		fmt.Printf("%s", m.Payload)
+		handleMsg(&m, p)
 	}
 }
 
