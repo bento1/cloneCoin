@@ -70,6 +70,8 @@ func (p *peer) write() {
 
 }
 func initPeer(conn *websocket.Conn, address, port string) *peer {
+	Peers.m.Lock()
+	defer Peers.m.Unlock()
 	key := fmt.Sprintf("%s:%s", address, port)
 
 	p := peer{
@@ -80,9 +82,9 @@ func initPeer(conn *websocket.Conn, address, port string) *peer {
 		port:    port,
 	}
 
-	go p.read()
-	go p.write()
-	Peers.value[key] = &p
+	go p.read()           // 3000이 웹소켓으로 업그레이드하면서
+	go p.write()          //4000 요청일 경우 3000이 가진 최근 블럭 정보를 받아옴
+	Peers.value[key] = &p //여기서 data race를 야기할 수 있다. 껏다가 킬때
 
 	return &p
 }

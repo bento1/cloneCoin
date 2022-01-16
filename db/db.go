@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/github.com/bento1/cloneCoin/utils"
 
@@ -9,13 +10,22 @@ import (
 )
 
 const (
-	dbName       = "blockchain.db"
+	dbName       = "blockchain"
 	dataBucket   = "data"
 	blocksBucket = "blocks"
 	checkpoint   = "checkpoint"
 )
 
 var db *bolt.DB
+
+func getDBName() string {
+	for i, a := range os.Args {
+		fmt.Println(i, a)
+
+	}
+	port := os.Args[2][6:]
+	return fmt.Sprintf("%s_%s.db", dbName, port)
+}
 
 // var once sync.Once
 func Close() {
@@ -24,7 +34,7 @@ func Close() {
 func DB() *bolt.DB {
 	if db == nil {
 
-		dbPointer, err := bolt.Open(dbName, 0600, nil)
+		dbPointer, err := bolt.Open(getDBName(), 0600, nil)
 
 		utils.HandleErr(err)
 
