@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/github.com/bento1/cloneCoin/utils"
@@ -18,6 +19,7 @@ type Tx struct {
 	TxIns     []*TxIn  `json:"txins"`
 	TxOuts    []*TxOut `json:"txouts"`
 }
+
 type TxIn struct {
 	TxID      string `json:"txid"` // 이전의 transaction output을 가져올수 있는 방법이됨
 	Index     int    `json :"index"`
@@ -25,7 +27,9 @@ type TxIn struct {
 	// Amount int    `json:"amount"`
 }
 type mempool struct {
-	Txs []*Tx
+	// Txs []*Tx //배열형태는 탐색이 오래걸림
+	Txs map[string]*Tx //key TxID
+	m   sync.Mutex
 }
 
 type TxOut struct {
@@ -38,7 +42,18 @@ type UTxOut struct {
 	Amount int    `json:"amount"`
 }
 
-var Mempool *mempool = &mempool{}
+var m *mempool
+var memOnce sync.Once
+
+func Mempool() *mempool {
+	memOnce.Do(func() {
+		m = &mempool{
+			Txs: make(map[string]*Tx),
+		}
+	})
+	return m
+}
+
 var ErrorNoMoney = errors.New("Not Enough Money")
 var ErrorNotValid = errors.New("Not Valid")
 
@@ -136,7 +151,7 @@ func makeTx(from string, to string, amount int) (*Tx, error) {
 func isOnMempool(UTxOut *UTxOut) bool {
 	exist := false
 Outer:
-	for _, tx := range Mempool.Txs {
+	for _, tx := range Mempool().Txs {
 		for _, input := range tx.TxIns {
 			if input.TxID == UTxOut.TxID && input.Index == UTxOut.Index {
 				exist = true
@@ -148,24 +163,38 @@ Outer:
 	return exist
 }
 
-func (m *mempool) AddTx(to string, amount int) error {
+func (m *mempool) AddTx(to string, amount int) (*Tx, error) {
 	//누가 보냈는지는 알필요가없다.
 	// 지갑 (to)에서 정보를 받아오면된다.
+	m.m.Lock()
+	defer m.m.Unlock()
 	tx, err := makeTx(wallet.Wallet().Address, to, amount) //나중에 wallet이 들어감
 	if err != nil {
-		return err
+		return nil, err
 	}
-	m.Txs = append(m.Txs, tx)
-	return nil
+	m.Txs[tx.Id] = tx
+	return tx, nil
 
 }
 
 //컨펌되지 않은 transactions 가져오기 from mempool
 
 func (m *mempool) txToConfirm() []*Tx {
+	m.m.Lock()
+	defer m.m.Unlock()
 	coinbase := makeCoinBaseTx(wallet.Wallet().Address)
-	txs := m.Txs
-	txs = append(txs, coinbase)
-	m.Txs = nil
+	var txs []*Tx
+	for _, tx := range m.Txs {
+		txs = append(txs, tx)
+	}
+	txs = append(txs, coinbase) //rewards
+	m.Txs = make(map[string]*Tx)
 	return txs
+}
+
+func (m *mempool) AddPeerTx(tx *Tx) {
+	m.m.Lock()
+	defer m.m.Unlock()
+
+	m.Txs[tx.Id] = tx
 }

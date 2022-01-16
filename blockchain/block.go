@@ -51,7 +51,7 @@ func createBlock(previoushash string, height int, difficulty int) *Block {
 		Nonce:        0,
 	} //통쨰로
 	block.mine()
-	block.Transactions = Mempool.txToConfirm() //채굴이 끝난 후 진행되어야함
+	block.Transactions = Mempool().txToConfirm() //채굴이 끝난 후 진행되어야함
 	persistBlock(&block)
 	return &block
 }

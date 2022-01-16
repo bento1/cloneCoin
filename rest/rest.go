@@ -101,9 +101,9 @@ func blocks(rw http.ResponseWriter, r *http.Request) {
 	case "GET":
 		json.NewEncoder(rw).Encode(blockchain.Blocks(blockchain.BlockChain()))
 	case "POST":
-		blockchain.BlockChain().AddBlock()
+		newblock := blockchain.BlockChain().AddBlock()
 		rw.WriteHeader(http.StatusCreated)
-
+		p2p.BroadcastNewBlock(newblock)
 	}
 }
 func block(rw http.ResponseWriter, r *http.Request) {
@@ -127,7 +127,7 @@ func status(rw http.ResponseWriter, r *http.Request) {
 	case "GET":
 		// // rw.Header().Add("Content-Type", "application/json")
 		// return
-		json.NewEncoder(rw).Encode(blockchain.BlockChain())
+		blockchain.Status(blockchain.BlockChain(), rw)
 
 	}
 }
@@ -153,20 +153,20 @@ func myWallet(rw http.ResponseWriter, r *http.Request) {
 }
 
 func mempool(rw http.ResponseWriter, r *http.Request) {
-	utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.Mempool.Txs))
+	utils.HandleErr(json.NewEncoder(rw).Encode(blockchain.Mempool().Txs))
 }
 
 func transactions(rw http.ResponseWriter, r *http.Request) {
 	var payload AddTxPayLoad
 	utils.HandleErr(json.NewDecoder(r.Body).Decode(&payload))
-	err := blockchain.Mempool.AddTx(payload.To, payload.Amount)
+	tx, err := blockchain.Mempool().AddTx(payload.To, payload.Amount)
 	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)                  //헤더에도 돈이 부족하다고
 		json.NewEncoder(rw).Encode(errorResponse{err.Error()}) //다양한 상황을
 		return
 
 	}
-
+	p2p.BroadcastNewTx(tx)
 	rw.WriteHeader(http.StatusCreated)
 
 }

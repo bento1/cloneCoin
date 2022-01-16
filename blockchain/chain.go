@@ -1,7 +1,9 @@
 package blockchain
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"sync"
 
 	"github.com/github.com/bento1/cloneCoin/db"
@@ -12,6 +14,7 @@ type blockchain struct { //이제 마지막 해쉬만, 길이가 몇인지만 �
 	NewestHash        string `json:"newesthash"`
 	Height            int    `json:"height"`
 	CurrentDifficulty int    `json:"currentdifficulty"`
+	m                 sync.Mutex
 }
 
 var b *blockchain
@@ -42,7 +45,10 @@ func restoreBlockchain(b *blockchain, data []byte) {
 
 func BlockChain() *blockchain {
 	once.Do(func() {
-		b = &blockchain{"", 0, defaultDifficulty}
+		b = &blockchain{
+			NewestHash:        "",
+			Height:            0,
+			CurrentDifficulty: defaultDifficulty}
 		fmt.Printf("NewestHash: %s\nHeight: %d\n", b.NewestHash, b.Height)
 		// search checkpoint onthe db
 		// restore b from bytea
@@ -58,21 +64,29 @@ func BlockChain() *blockchain {
 	fmt.Printf("NewestHash: %s\nHeight: %d\n", b.NewestHash, b.Height)
 	return b
 }
+func Status(b *blockchain, rw http.ResponseWriter) {
+	b.m.Lock()
+	defer b.m.Unlock()
+	utils.HandleErr(json.NewEncoder(rw).Encode(b))
+}
 func persistBlockchain(b *blockchain) {
 	db.SaveBlockChain(utils.ToBytea(b))
 }
 
-func (b *blockchain) AddBlock() {
+func (b *blockchain) AddBlock() *Block {
 	block := createBlock(b.NewestHash, b.Height+1, difficulty(b))
 	b.NewestHash = block.Hash
 	b.Height = block.Height
 	b.CurrentDifficulty = block.Difficulty
 	persistBlockchain(b)
+	return block
 
 }
 
 func Blocks(b *blockchain) []*Block {
 	//previous hash를 계속 호출한다.
+	b.m.Lock()
+	defer b.m.Unlock()
 	var blocks []*Block
 	hashCursor := b.NewestHash
 	for {
@@ -168,6 +182,8 @@ func (b *blockchain) Replace(newblocks []*Block) {
 	// 기존블록 삭제
 	// 블록 교체
 	// 블록 영속
+	b.m.Lock()
+	defer b.m.Unlock()
 	b.CurrentDifficulty = newblocks[0].Difficulty
 	b.Height = len(newblocks)
 	b.NewestHash = newblocks[0].Hash
@@ -175,5 +191,30 @@ func (b *blockchain) Replace(newblocks []*Block) {
 	db.EmptyBlocks()
 	for _, block := range newblocks {
 		persistBlock(block)
+	}
+}
+
+func (b *blockchain) AddPeerBlock(block *Block) {
+	b.m.Lock()
+	m.m.Lock()
+	defer b.m.Unlock()
+	defer m.m.Unlock()
+	b.Height += 1
+	b.CurrentDifficulty = block.Difficulty
+	b.NewestHash = block.Hash
+	persistBlockchain(b)
+	persistBlock(block)
+
+	//clear mempool
+	//하나가 block에 올리면, 다른쪽엔 mempool이 계속 남아있다.
+	//list일경우 삭제
+	// for _, tx := range block.Transactions {
+	// 	tx.Id==
+	// } 느림
+	for _, tx := range block.Transactions {
+		_, ok := m.Txs[tx.Id]
+		if ok {
+			delete(m.Txs, tx.Id)
+		}
 	}
 }

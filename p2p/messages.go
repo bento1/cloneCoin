@@ -17,6 +17,8 @@ const (
 	MessageNewestBlock MessageKind = iota
 	MessageAllBlocksResqust
 	MessageAllBlocksResponse
+	MessageNewBlockNotify
+	MessageNewTxNotify
 )
 
 type Message struct {
@@ -48,6 +50,14 @@ func sendAllBlock(p *peer) {
 	m := makeMessage(MessageAllBlocksResponse, blockchain.Blocks(blockchain.BlockChain()))
 	p.inbox <- m
 }
+func notifyNewBlock(b *blockchain.Block, p *peer) {
+	m := makeMessage(MessageNewBlockNotify, b)
+	p.inbox <- m
+}
+func notifyNewTx(tx *blockchain.Tx, p *peer) {
+	m := makeMessage(MessageNewTxNotify, tx)
+	p.inbox <- m
+}
 func handleMsg(m *Message, p *peer) {
 	switch m.Kind {
 	case MessageNewestBlock: //3000이 요청함
@@ -74,6 +84,16 @@ func handleMsg(m *Message, p *peer) {
 		var payload []*blockchain.Block
 		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
 		blockchain.BlockChain().Replace(payload)
+	case MessageNewBlockNotify:
+		fmt.Printf("broadcast new blocks from %s\n", p.key)
+		var payload *blockchain.Block
+		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
+		blockchain.BlockChain().AddPeerBlock(payload)
+	case MessageNewTxNotify:
+		fmt.Printf("broadcast new transaction from %s\n", p.key)
+		var payload *blockchain.Tx
+		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
+		blockchain.Mempool().AddPeerTx(payload)
 	}
-	// fmt.Printf("Peer : %s, Sent a message with kind of : %d\n", p.key, m.Kind)
+
 }
