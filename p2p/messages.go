@@ -19,6 +19,7 @@ const (
 	MessageAllBlocksResponse
 	MessageNewBlockNotify
 	MessageNewTxNotify
+	MessageNewPeerNotify
 )
 
 type Message struct {
@@ -58,6 +59,10 @@ func notifyNewTx(tx *blockchain.Tx, p *peer) {
 	m := makeMessage(MessageNewTxNotify, tx)
 	p.inbox <- m
 }
+func notifyNewPeer(address string, p *peer) {
+	m := makeMessage(MessageNewPeerNotify, address)
+	p.inbox <- m
+}
 func handleMsg(m *Message, p *peer) {
 	switch m.Kind {
 	case MessageNewestBlock: //3000이 요청함
@@ -94,6 +99,15 @@ func handleMsg(m *Message, p *peer) {
 		var payload *blockchain.Tx
 		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
 		blockchain.Mempool().AddPeerTx(payload)
+	case MessageNewPeerNotify:
+		fmt.Printf("broadcast adding new Peer from %s\n", p.key)
+		var payload string
+		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
+		address := utils.Splitter(payload, ":", 0)
+		port := utils.Splitter(payload, ":", 1)
+		ourport := ":" + utils.Splitter(payload, ":", 2)
+		// fmt.Println(address, port, ourport)
+		AddPeer(address, port, ourport, false)
 	}
 
 }

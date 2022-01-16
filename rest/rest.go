@@ -176,7 +176,7 @@ func peers(rw http.ResponseWriter, r *http.Request) {
 		var payload addPeerPayload
 		json.NewDecoder(r.Body).Decode(&payload)
 		fmt.Println(payload.Address, payload.Port)
-		p2p.AddPeer(payload.Address, payload.Port, port)
+		p2p.AddPeer(payload.Address, payload.Port, port, true)
 		rw.WriteHeader(http.StatusOK)
 	case "GET":
 		json.NewEncoder(rw).Encode(p2p.ALLPeers(&p2p.Peers)) // 데이터 레이스 만듬
