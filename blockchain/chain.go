@@ -163,3 +163,17 @@ func BalanceByAddress(b *blockchain, address string) int {
 	}
 	return amount
 }
+
+func (b *blockchain) Replace(newblocks []*Block) {
+	// 기존블록 삭제
+	// 블록 교체
+	// 블록 영속
+	b.CurrentDifficulty = newblocks[0].Difficulty
+	b.Height = len(newblocks)
+	b.NewestHash = newblocks[0].Hash
+	persistBlockchain(b)
+	db.EmptyBlocks()
+	for _, block := range newblocks {
+		persistBlock(block)
+	}
+}

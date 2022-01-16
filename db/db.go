@@ -88,3 +88,13 @@ func SaveBlockChain(data []byte) { //마지막 해쉬와 Height가 담긴 blockc
 	})
 	utils.HandleErr(err)
 }
+
+func EmptyBlocks() {
+	err := DB().Update(func(t *bolt.Tx) error {
+		t.DeleteBucket([]byte(blocksBucket))
+		_, err := t.CreateBucket([]byte(blocksBucket))
+		utils.HandleErr(err)
+		return nil
+	})
+	utils.HandleErr(err)
+}

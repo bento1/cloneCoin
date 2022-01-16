@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/github.com/bento1/cloneCoin/blockchain"
 	"github.com/github.com/bento1/cloneCoin/utils"
@@ -32,6 +33,7 @@ func makeMessage(kind MessageKind, payload interface{}) []byte {
 	return mJson
 }
 func sendNewestBlock(p *peer) {
+	fmt.Printf("Send newestblock to  %s\n", p.key)
 	b, err := blockchain.FindBlock(blockchain.BlockChain().NewestHash)
 	utils.HandleErr(err)
 	m := makeMessage(MessageNewestBlock, b) //kind를 줌
@@ -49,24 +51,29 @@ func sendAllBlock(p *peer) {
 func handleMsg(m *Message, p *peer) {
 	switch m.Kind {
 	case MessageNewestBlock: //3000이 요청함
-		var payload blockchain.Block // 4000의 체인
+		fmt.Printf("Receive newestblock from  %s\n", p.key) // read 한다. sendNewestBlock에서 MessageNewestBlock 를 보냈기 떄문에 이부분을 Read에서 Json parse하여 알게됨
+		var payload blockchain.Block                        // 4000의 체인
 		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
 		//fmt.Println(payload)
 		b, err := blockchain.FindBlock(blockchain.BlockChain().NewestHash)
 		utils.HandleErr(err)
 		if payload.Height >= b.Height {
 			// request all the bloicks form
+			fmt.Printf("Requset all blocks to  %s\n", p.key)
 			requestAllBlocks(p)
 		} else {
 			//send  our blocks to 4000
+			fmt.Printf("Send newestblock form  %s\n", p.key)
 			sendNewestBlock(p)
 		}
 	case MessageAllBlocksResqust:
+		fmt.Printf("%s wants all blocks\n", p.key)
 		sendAllBlock(p)
 	case MessageAllBlocksResponse:
+		fmt.Printf("Receive all blocks from %s\n", p.key)
 		var payload []*blockchain.Block
 		utils.HandleErr(json.Unmarshal(m.Payload, &payload))
-
+		blockchain.BlockChain().Replace(payload)
 	}
 	// fmt.Printf("Peer : %s, Sent a message with kind of : %d\n", p.key, m.Kind)
 }
